@@ -1,14 +1,34 @@
 import { Text, View, TextInput, Pressable, StyleSheet } from 'react-native'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
+import { CheckMark } from '@/components/CheckMark'
+import { AuthenticationContext } from '@/contexts/AuthenticationContext'
+import { createUserWithEmailAndPassword } from '@firebase/auth'
+import { useNavigation } from 'expo-router'
+
+
 
 export default function AuthenticationScreen(){
     const [ email, setEmail ] = useState('')
     const [ password, setPassword ] = useState ('')
     //validating password
     const [validPassword, setValidPassword ] = useState( false )
+    const [ validEmail, setValidEmail ] = useState (false)
+
+    const fbauth = useContext( AuthenticationContext )
+    const navigation = useNavigation ()
+
+    //to sign up the new user
+    const SignUpUser = () => {
+        createUserWithEmailAndPassword( fbauth, email, password )
+        //.then((user) => console.log(user))
+        .then((user) => {
+            navigation.navigate("(tabs)")
+        })
+        .catch((error) => console.log(error))
+    }
 
     useEffect( () => {
-        if( password.length < 8 ){
+        if( password.length > 8 ){
             setValidPassword( true )
         }
         else{
@@ -16,12 +36,29 @@ export default function AuthenticationScreen(){
         }
     },[password])
 
+    useEffect(() => {
+        if(
+            email.includes('@')&&
+            email.includes('.')&&
+            email.indexOf('@')> 0
+        )
+        {
+            setValidEmail( true )
+        }
+        else{
+            setValidEmail( false )
+        }
+    },[email])
+
 
   return (
     <View style={ styles.container }>
         <Text style ={ styles.title }> Authentication </Text>
         {/* email address */}
-        <Text style ={ styles.label }>Email address</Text>
+        <Text style ={ styles.label }>
+            Email address
+            <CheckMark show ={ validEmail }/>
+            </Text>
         <TextInput
          style ={ styles.field }
          value={ email }
@@ -30,7 +67,11 @@ export default function AuthenticationScreen(){
          />
 
         {/* password */}
-        <Text style ={ styles.label }>Password</Text>
+        <Text style ={ styles.label }>
+            Password
+            <CheckMark show ={ validPassword }/>
+        </Text>
+
         <TextInput
         style ={ (validPassword == true ) ? styles.validField: styles.field }
         secureTextEntry={ true } 
@@ -38,7 +79,11 @@ export default function AuthenticationScreen(){
          onChangeText={ ( txt ) => setPassword( txt )}
          placeholder= 'min 8 characters'
         />
-        <Pressable style ={ styles.button }>
+        <Pressable
+             style ={ (validEmail && validPassword) ? styles.button : styles.buttonDisabled}
+             disabled = {(validEmail && validPassword) ? false : true }
+             onPress={ () =>SignUpUser() }
+             >
             <Text style ={ styles.buttonText }>Login</Text>
         </Pressable>
     </View>
@@ -88,4 +133,9 @@ const styles = StyleSheet.create({
         textAlign: "center",
         fontSize: 16
     },
+    buttonDisabled:{
+        backgroundColor: "#ccc3b1",
+        padding: 8,
+    }
+   
 })
