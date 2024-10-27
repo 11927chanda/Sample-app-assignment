@@ -2,12 +2,10 @@ import { Text, View, TextInput, Pressable, StyleSheet } from 'react-native'
 import { useState, useEffect, useContext } from 'react'
 import { CheckMark } from '@/components/CheckMark'
 import { AuthenticationContext } from '@/contexts/AuthenticationContext'
-import { createUserWithEmailAndPassword } from '@firebase/auth'
+import { signInWithEmailAndPassword } from '@firebase/auth'
 import { useNavigation, Link } from 'expo-router'
 
-
-
-export default function AuthenticationScreen(){
+export default function Login(){
     const [ email, setEmail ] = useState('')
     const [ password, setPassword ] = useState ('')
     //validating password
@@ -17,9 +15,9 @@ export default function AuthenticationScreen(){
     const fbauth = useContext( AuthenticationContext )
     const navigation = useNavigation ()
 
-    //to sign up the new user
-    const SignUpUser = () => {
-        createUserWithEmailAndPassword( fbauth, email, password )
+    //to sign in 
+    const SignInUser = () => {
+        signInWithEmailAndPassword( fbauth, email, password )
         //.then((user) => console.log(user))
         .then((user) => {
             navigation.navigate("(tabs)")
@@ -50,10 +48,9 @@ export default function AuthenticationScreen(){
         }
     },[email])
 
-
-  return (
-    <View style={ styles.container }>
-        <Text style ={ styles.title }> Authentication </Text>
+    return(
+        <View style={ styles.container }>
+        <Text style ={ styles.title }> Log in to your account </Text>
         {/* email address */}
         <Text style ={ styles.label }>
             Email address
@@ -82,14 +79,15 @@ export default function AuthenticationScreen(){
         <Pressable
              style ={ (validEmail && validPassword) ? styles.button : styles.buttonDisabled}
              disabled = {(validEmail && validPassword) ? false : true }
-             onPress={ () =>SignUpUser() }
+             onPress={ () =>SignInUser() }
              >
-            <Text style ={ styles.buttonText }>Sign Up</Text>
+            <Text style ={ styles.buttonText }>Login</Text>
         </Pressable>
-        <Link href ="/login">
-        <Text>Go to sign in page</Text></Link>
+        <Link href ="/index">
+        <Text>Go to sign up page</Text></Link>
     </View>
-  )  
+    )
+
 }
 
 const styles = StyleSheet.create({
