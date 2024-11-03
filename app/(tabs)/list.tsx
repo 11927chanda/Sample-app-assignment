@@ -6,6 +6,7 @@ import { FirestoreContext } from '@/contexts/FirestoreContext'
 import { AuthenticationContext } from '@/contexts/AuthenticationContext'
 import { TextInput } from 'react-native-gesture-handler'
 import { Ionicons } from '@expo/vector-icons'
+import {collection, addDoc} from '@expo/vector-icons'
 
 export default function List( props:any ){
 
@@ -28,6 +29,18 @@ export default function List( props:any ){
             setDatastate( listData )
         }
     })
+    //custom function to add item
+    const addNewCategory = () =>{
+       // console.log( auth.currentUser.uid )
+       const userid = auth.currentUser.uid
+       if( userid ){
+            const path = collection( db, 'users/${userid/documents')
+            const docRef = addDoc( path,{
+                name: categoryName, status: false
+            })
+            setCategoryName('')
+       }
+    }
 
     const renderItem = ({item}:any) =>{
         return(
@@ -56,19 +69,20 @@ export default function List( props:any ){
                 ListHeaderComponent={ <ListHeader text ="List Header"/> }
 
             />
-            //Modal to input data
+            {/*Modal to input data*/}
             <Modal visible={ ModalVisible }>
                 <View>
                     <Text>
                         Name of Item
                     </Text>
-                    //input category name
+                    {/*input category name*/}
                     <TextInput
                         value = { categoryName }
                         onChangeText = {(val) => setCategoryName(val)}
                     />
-                    //add to firebase database
-                    <Pressable>
+                    {/*add to firebase database*/}
+                    <Pressable
+                        onPress = { () => addNewCategory() }>
                         <Text>Submit</Text>
                     </Pressable>
                     <Pressable onPress = { () => setModalVisible(false) }>
