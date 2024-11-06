@@ -14,9 +14,11 @@ const styles = StyleSheet.create({
         fontSize:24,
         padding: 6,
         backgroundColor: "purple",
+        marginBottom: 5,
     },
     headerText: {
         fontSize: 24,
-        textAlign: "center"
+        textAlign: "center",
+       
     }
 })
