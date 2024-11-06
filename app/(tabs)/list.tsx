@@ -6,40 +6,53 @@ import { FirestoreContext } from '@/contexts/FirestoreContext'
 import { AuthenticationContext } from '@/contexts/AuthenticationContext'
 import { TextInput } from 'react-native-gesture-handler'
 import { Ionicons } from '@expo/vector-icons'
-import {collection, addDoc} from '@expo/vector-icons'
+import {collection, addDoc, getDocs} from '@firebase/firestore'
 
 export default function List( props:any ){
 
     const db = useContext( FirestoreContext )
     const auth = useContext( AuthenticationContext )
-    
-    const listData:ItemPrototype[] = [
-        { id:1, name: "item 1", status: "in"},
-        { id:2, name: "item 2", status: "in"},
-        { id:3, name: "item 3", status: "in"},
-        { id:4, name: "item 4", status: "in"},
-    ]
+    //path to user data collection
+    const userDataPath = `users/${auth.currentUser.uid}/documents`
 
     const[ datastate, setDatastate ] = useState<ItemPrototype | any>([])
     const[ ModalVisible, setModalVisible ] = useState<boolean>( false )
     const[ categoryName, setCategoryName ]= useState <string | undefined>()
+    const[ dataLoaded, setDataLoaded ]= useState(false)
 
     useEffect( ()  => {
-        if( datastate.length == 0){
-            setDatastate( listData )
+        if( dataLoaded == false){
+            getNewCategory()
+            setDataLoaded( true)
         }
-    })
+    },[dataLoaded])
     //custom function to add item
-    const addNewCategory = () =>{
+    const addNewCategory = async () =>{
        // console.log( auth.currentUser.uid )
        const userid = auth.currentUser.uid
        if( userid ){
-            const path = collection( db, 'users/${userid/documents')
+            const path = collection( db, userDataPath)
             const docRef = addDoc( path,{
                 name: categoryName, status: false
             })
             setCategoryName('')
+            setDataLoaded (false)
        }
+    }
+
+    const getNewCategory = async () => {
+        if( auth.currentUser.uid){
+            const path = collection(db, userDataPath)
+            const querySnapshot = await getDocs(path)
+            let userData:ItemPrototype[] = []
+            querySnapshot.forEach((userDocument) =>{
+                let document:any = userDocument.data()
+                document.id = userDocument.id
+                userData.push(document)
+            })
+            setDatastate( userData )
+        }
+
     }
 
     const renderItem = ({item}:any) =>{
@@ -58,12 +71,13 @@ export default function List( props:any ){
                 style={styles.button}
                 onPress={ () => setModalVisible(true)}
             >
+                <Ionicons style ={styles.buttonText} name = "add-outline" size={20}/>
                 <Text style={styles.buttonText}>
-                    <Ionicons name = "add-outline" size={20}/>
-                    Add Data</Text>
+                    Add Data
+                </Text>
             </Pressable>
             <FlatList 
-                data = {datastate}
+                data = { datastate }
                 renderItem={ renderItem }
                 keyExtractor={item=> item.id}
                 ListHeaderComponent={ <ListHeader text ="List Header"/> }
@@ -71,7 +85,7 @@ export default function List( props:any ){
             />
             {/*Modal to input data*/}
             <Modal visible={ ModalVisible }>
-                <View>
+                <View style={ styles.container}>
                     <Text>
                         Name of Item
                     </Text>
@@ -81,13 +95,23 @@ export default function List( props:any ){
                         onChangeText = {(val) => setCategoryName(val)}
                     />
                     {/*add to firebase database*/}
-                    <Pressable
-                        onPress = { () => addNewCategory() }>
-                        <Text>Submit</Text>
-                    </Pressable>
-                    <Pressable onPress = { () => setModalVisible(false) }>
-                        <Text>Cancel</Text>
-                    </Pressable>
+                    <View style={styles.modalBar}>
+                        <Pressable
+                            onPress = { () => {addNewCategory()
+                                setModalVisible( false )
+                            } }
+                            style={ styles.modalButton}
+                        >
+                        
+                        <Text style={styles.buttonText}>Submit</Text>
+                        </Pressable>
+                        <Pressable onPress = { () => setModalVisible(false) }
+                             style={ styles.modalButton}    
+                        >
+                            <Text style={styles.buttonText}>Cancel</Text>
+
+                        </Pressable>
+                    </View>
                 </View>
             </Modal>
         </View>
@@ -103,12 +127,31 @@ const styles = StyleSheet.create({
     button: {
         padding: 10,
         backgroundColor: "black",
+        flexDirection: "row",
+        gap: 10,
 
     },
     buttonText: {
         padding: 10,
-        backgroundColor: "white",
+        color: "white",
 
+    },
+    container:{
+        flex:1,
+        paddingHorizontal: 10,
+        backgroundColor: "pink",
+    },
+    modalBar:{
+        backgroundColor: "grey",
+        flexDirection: "row",
+        justifyContent: "space-between",
+    },
+    modalInput:{
+        backgroundColor: "white",
+        padding: 8,
+    },
+    modalButton:{
+        padding: 10,
     }
 
 })
