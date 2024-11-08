@@ -1,9 +1,10 @@
 import { Text, View, TextInput, Pressable, StyleSheet } from 'react-native'
 import { useState, useEffect, useContext } from 'react'
 import { CheckMark } from '@/components/CheckMark'
+import { FirebaseError } from '@/components/FirebaseError'
 import { AuthenticationContext } from '@/contexts/AuthenticationContext'
-import { createUserWithEmailAndPassword } from '@firebase/auth'
-import { useNavigation, Link } from 'expo-router'
+import { createUserWithEmailAndPassword, onAuthStateChanged } from '@firebase/auth'
+import { Link, router } from 'expo-router'
 
 
 
@@ -13,22 +14,22 @@ export default function AuthenticationScreen(){
     //validating password
     const [validPassword, setValidPassword ] = useState( false )
     const [ validEmail, setValidEmail ] = useState (false)
+    const [ error, setError ]= useState('')
 
     const fbauth = useContext( AuthenticationContext )
-    const navigation = useNavigation ()
-
+   
     //to sign up the new user
     const SignUpUser = () => {
         createUserWithEmailAndPassword( fbauth, email, password )
         //.then((user) => console.log(user))
         .then((user) => {
-            navigation.navigate("(tabs)")
+            router.navigate("/(tabs)")
         })
         .catch((error) => console.log(error))
     }
 
     useEffect( () => {
-        if( password.length > 8 ){
+        if( password.length > 7 ){
             setValidPassword( true )
         }
         else{
@@ -50,10 +51,21 @@ export default function AuthenticationScreen(){
         }
     },[email])
 
+    onAuthStateChanged( fbauth, ( user) => {
+        if(user){
+            //user is currently authenticated
+            //redirect user
+            router.navigate("/(tabs)")
+        }
+        else{
+            //user is not authenticated
+
+        }
+    })
 
   return (
     <View style={ styles.container }>
-        <Text style ={ styles.title }> Authentication </Text>
+        <Text style ={ styles.title }> Sign up for an account </Text>
         {/* email address */}
         <Text style ={ styles.label }>
             Email address
@@ -88,6 +100,7 @@ export default function AuthenticationScreen(){
         </Pressable>
         <Link href ="/login">
         <Text>Go to sign in page</Text></Link>
+        <FirebaseError error= { error }/>
     </View>
   )  
 }

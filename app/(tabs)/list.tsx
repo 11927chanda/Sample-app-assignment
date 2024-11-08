@@ -16,7 +16,7 @@ export default function List( props:any ){
     const auth = useContext( AuthenticationContext )
     const navigation = useNavigation()
     //path to user data collection
-    let userDataPath: null | string = null
+    let userDataPath:  string = ''
 
     const[ datastate, setDatastate ] = useState<ItemPrototype | any>([])
     const[ ModalVisible, setModalVisible ] = useState<boolean>( false )
@@ -24,18 +24,17 @@ export default function List( props:any ){
     const[ dataLoaded, setDataLoaded ]= useState<boolean>(false)
 
     useEffect( ()  => {
-        if( dataLoaded == false && auth.currentUser){
-             userDataPath = `users/${auth.currentUser.uid}/documents`
+        if( dataLoaded == false && auth.currentUser){   
             getNewCategory()
             setDataLoaded( true)
         }
-    },[dataLoaded, auth])
+    },[dataLoaded])
     //custom function to add item
     const addNewCategory = async () =>{
        // console.log( auth.currentUser.uid )
        const userid = auth.currentUser.uid
        if( userid ){
-            const path = collection( db, userDataPath)
+            const path = collection( db, `users/${auth.currentUser.uid}/documents`)
             const docRef = addDoc( path,{
                 name: categoryName, status: false
             })
@@ -46,7 +45,7 @@ export default function List( props:any ){
 
     const getNewCategory = async () => {
         if( auth.currentUser.uid){
-            const path = collection(db, userDataPath)
+            const path = collection(db, `users/${auth.currentUser.uid}/documents`)
             const querySnapshot = await getDocs(path)
             let userData:ItemPrototype[] = []
             querySnapshot.forEach((userDocument) =>{
@@ -56,19 +55,20 @@ export default function List( props:any ){
             })
             setDatastate( userData )
         }
-
     }
 
     const renderItem = ({item}:any) =>{
         return(
             //navigate to itemDetails
-            <Link href = "detail" >
+            <Link href = {{
+                pathname: '/detail',
+                params: {id: item.id, name: item.name}
+            }}>
                 <View style = {styles.item}>
                     <Text>{ item.name }</Text>
                 </View>
             </Link>
         )
-
     }
 
     return(
@@ -88,7 +88,7 @@ export default function List( props:any ){
                 renderItem={ renderItem }
                 keyExtractor={item=> item.id}
                 ListHeaderComponent={ <ListHeader text ="List Header"/> }
-                ItemSeparatorComponent={ <ListItemSeperator/> }
+                ItemSeparatorComponent={ ListItemSeperator }
 
             />
             {/*Modal to input data*/}

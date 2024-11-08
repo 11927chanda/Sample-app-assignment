@@ -2,8 +2,8 @@ import { Text, View, TextInput, Pressable, StyleSheet } from 'react-native'
 import { useState, useEffect, useContext } from 'react'
 import { CheckMark } from '@/components/CheckMark'
 import { AuthenticationContext } from '@/contexts/AuthenticationContext'
-import { signInWithEmailAndPassword } from '@firebase/auth'
-import { useNavigation, Link } from 'expo-router'
+import { signInWithEmailAndPassword, onAuthStateChanged } from '@firebase/auth'
+import { Link, router } from 'expo-router'
 
 export default function Login(){
     const [ email, setEmail ] = useState('')
@@ -13,20 +13,19 @@ export default function Login(){
     const [ validEmail, setValidEmail ] = useState (false)
 
     const fbauth = useContext( AuthenticationContext )
-    const navigation = useNavigation ()
-
+   
     //to sign in 
     const SignInUser = () => {
         signInWithEmailAndPassword( fbauth, email, password )
         //.then((user) => console.log(user))
         .then((user) => {
-            navigation.navigate("(tabs)")
+            router.navigate("/(tabs)")
         })
         .catch((error) => console.log(error))
     }
 
     useEffect( () => {
-        if( password.length > 8 ){
+        if( password.length > 7 ){
             setValidPassword( true )
         }
         else{
@@ -47,6 +46,17 @@ export default function Login(){
             setValidEmail( false )
         }
     },[email])
+    onAuthStateChanged( fbauth, ( user) => {
+        if(user){
+            //user is currently authenticated
+            //redirect user
+            router.navigate("/(tabs)")
+        }
+        else{
+            //user is not authenticated
+
+        }
+    })
 
     return(
         <View style={ styles.container }>
@@ -83,7 +93,7 @@ export default function Login(){
              >
             <Text style ={ styles.buttonText }>Login</Text>
         </Pressable>
-        <Link href ="/index">
+        <Link href ="/">
         <Text>Go to sign up page</Text></Link>
     </View>
     )
