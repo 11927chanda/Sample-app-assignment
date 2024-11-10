@@ -42,6 +42,8 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen name="detail" options={{href:null}}></Tabs.Screen>
+      <Tabs.Screen name="editProfile" options={{href:null}}></Tabs.Screen>
     </Tabs>
+    
   );
 }
