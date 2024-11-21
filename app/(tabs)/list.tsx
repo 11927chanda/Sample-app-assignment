@@ -8,7 +8,7 @@ import { AuthenticationContext } from '@/contexts/AuthenticationContext'
 import { TextInput } from 'react-native-gesture-handler'
 import { Ionicons } from '@expo/vector-icons'
 import { useNavigation, Link } from 'expo-router'
-import {collection, addDoc, getDocs} from '@firebase/firestore'
+import {collection, addDoc, getDocs,deleteDoc, doc} from '@firebase/firestore'
 
 export default function List( props:any ){
 
@@ -70,6 +70,8 @@ export default function List( props:any ){
             </Link>
         )
     }
+    
+    // Function to delete an item by ID
 
     return(
         <View>
