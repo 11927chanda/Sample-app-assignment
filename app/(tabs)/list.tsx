@@ -12,6 +12,8 @@ import {collection, addDoc, getDocs,deleteDoc, doc} from '@firebase/firestore'
 
 export default function List( props:any ){
 
+    
+
     const db = useContext( FirestoreContext )
     const auth = useContext( AuthenticationContext )
     const navigation = useNavigation()
